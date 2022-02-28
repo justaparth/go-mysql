@@ -42,6 +42,17 @@ type BinlogSyncerConfig struct {
 	// If not set, use os.Hostname() instead.
 	Localhost string
 
+	// Value used for `report-host` and `report-password`. These are not related to mysql authentication, they are
+	// values reported during source replica registration (see the documentation below). If they are not set, we
+	// default to the user/password values provided above.
+	// Please see the documentation below:
+	// - https://dev.mysql.com/doc/internals/en/com-register-slave.html
+	// - https://dev.mysql.com/doc/refman/5.6/en/replication-options-replica.html#sysvar_report_password
+	//   Note that at time of writing, there is a 32 character limit on report-password.
+	// - https://dev.mysql.com/doc/refman/5.6/en/replication-options-replica.html#sysvar_report_user
+	SlaveReportPassword *string
+	SlaveReportUser *string
+
 	// Charset is for MySQL client character set
 	Charset string
 
@@ -527,9 +538,17 @@ func (b *BinlogSyncer) writeRegisterSlaveCommand() error {
 	b.c.ResetSequence()
 
 	hostname := b.localHostname()
+	user := b.cfg.User
+	password := b.cfg.Password
+	if b.cfg.SlaveReportUser != nil {
+		user = *b.cfg.SlaveReportUser
+	}
+	if b.cfg.SlaveReportPassword != nil {
+		user = *b.cfg.SlaveReportPassword
+	}
 
 	// This should be the name of slave host not the host we are connecting to.
-	data := make([]byte, 4+1+4+1+len(hostname)+1+len(b.cfg.User)+1+len(b.cfg.Password)+2+4+4)
+	data := make([]byte, 4+1+4+1+len(hostname)+1+len(user)+1+len(password)+2+4+4)
 	pos := 4
 
 	data[pos] = COM_REGISTER_SLAVE
@@ -544,14 +563,14 @@ func (b *BinlogSyncer) writeRegisterSlaveCommand() error {
 	n := copy(data[pos:], hostname)
 	pos += n
 
-	data[pos] = uint8(len(b.cfg.User))
+	data[pos] = uint8(len(user))
 	pos++
-	n = copy(data[pos:], b.cfg.User)
+	n = copy(data[pos:], user)
 	pos += n
 
-	data[pos] = uint8(len(b.cfg.Password))
+	data[pos] = uint8(len(password))
 	pos++
-	n = copy(data[pos:], b.cfg.Password)
+	n = copy(data[pos:], password)
 	pos += n
 
 	binary.LittleEndian.PutUint16(data[pos:], b.cfg.Port)
