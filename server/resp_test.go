@@ -3,9 +3,9 @@ package server
 import (
 	"errors"
 
-	"github.com/go-mysql-org/go-mysql/mysql"
-	"github.com/go-mysql-org/go-mysql/packet"
-	mockconn "github.com/go-mysql-org/go-mysql/test_util/conn"
+	"github.com/justaparth/go-mysql/mysql"
+	"github.com/justaparth/go-mysql/packet"
+	mockconn "github.com/justaparth/go-mysql/test_util/conn"
 	"github.com/pingcap/check"
 )
 

@@ -6,7 +6,7 @@ import (
 
 	. "github.com/pingcap/check"
 
-	"github.com/go-mysql-org/go-mysql/mysql"
+	"github.com/justaparth/go-mysql/mysql"
 )
 
 type connTestSuite struct {
