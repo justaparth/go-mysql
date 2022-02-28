@@ -1,7 +1,7 @@
 package server
 
 import (
-	"github.com/go-mysql-org/go-mysql/mysql"
+	"github.com/justaparth/go-mysql/mysql"
 	"github.com/pingcap/check"
 )
 
